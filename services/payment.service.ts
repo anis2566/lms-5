@@ -19,7 +19,7 @@ export const CREATE_PAYMENT = async ({
   // Determine the base URL based on the environment
   const baseUrl =
     process.env.NODE_ENV === "production"
-      ? "https://basiceducationcare.vercel.app"
+      ? "https://educonnect-omega.vercel.app"
       : "http://localhost:3000";
 
   try {

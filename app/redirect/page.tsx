@@ -9,8 +9,10 @@ const ReidrectPage = () => {
 
 
     useEffect(() => {
-        if (redirectUrl) {
+        if (redirectUrl !== null) {
             window.location.href = redirectUrl
+        } else {
+            window.location.href = "/"
         }
     }, [redirectUrl])
 
