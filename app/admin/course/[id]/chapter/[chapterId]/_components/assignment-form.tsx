@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { CalendarIcon, Eye, Pencil, Trash, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Assignment } from "@prisma/client";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
@@ -50,16 +50,18 @@ interface Props {
 export const AssignmentForm = ({ chapterId, assignment }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const toggleEdit = useCallback(() => setIsEditing((prev) => !prev), []);
+
   const { onOpen } = useAssignment();
 
   const { mutate: createAssignment, isPending } = useMutation({
     mutationFn: CREATE_ASSIGNMENT,
     onSuccess: (data) => {
+      form.reset();
+      setIsEditing(false);
       toast.success(data.success, {
         id: "create-assignment",
       });
-      toggleEdit();
     },
     onError: (error) => {
       toast.error(error.message, {
@@ -131,7 +133,7 @@ export const AssignmentForm = ({ chapterId, assignment }: Props) => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="destructive"
                         size="icon"
                         onClick={() => onOpen(assignment.id)}
                       >
@@ -268,7 +270,7 @@ export const AssignmentForm = ({ chapterId, assignment }: Props) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={isPending} type="submit">
-                Save
+                {isPending ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>

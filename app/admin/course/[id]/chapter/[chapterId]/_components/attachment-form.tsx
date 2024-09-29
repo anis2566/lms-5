@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Pencil, Trash } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Attachment } from "@prisma/client";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,16 +37,15 @@ interface Props {
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, { message: "required" }),
-  url: z.string().min(1, { message: "required" }),
+  title: z.string().min(1, { message: "Title is required" }),
+  url: z.string().min(1, { message: "Attachment is required" }),
 });
 
 export const AttachmentsForm = ({ attachments, chapterId }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
-
   const { onOpen } = useAttachment();
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const toggleEdit = useCallback(() => setIsEditing((prev) => !prev), []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,21 +57,15 @@ export const AttachmentsForm = ({ attachments, chapterId }: Props) => {
     onSuccess: (data) => {
       form.reset();
       setIsEditing(false);
-      toast.success(data?.success, {
-        id: "create-attachment",
-      });
+      toast.success(data?.success, { id: "create-attachment" });
     },
     onError: (error) => {
-      toast.error(error.message, {
-        id: "create-attachment",
-      });
+      toast.error(error.message, { id: "create-attachment" });
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    toast.loading("Attachment creating...", {
-      id: "create-attachment",
-    });
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    toast.loading("Creating attachment...", { id: "create-attachment" });
     createAttachment({ chapterId, ...values });
   };
 
@@ -82,9 +74,7 @@ export const AttachmentsForm = ({ attachments, chapterId }: Props) => {
       <div className="flex items-center justify-between font-medium">
         Attachments
         <Button onClick={toggleEdit} variant="ghost">
-          {isEditing ? (
-            <>Cancel</>
-          ) : (
+          {isEditing ? "Cancel" : (
             <>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
@@ -92,50 +82,39 @@ export const AttachmentsForm = ({ attachments, chapterId }: Props) => {
           )}
         </Button>
       </div>
-      {!isEditing && (
+
+      {!isEditing && attachments.length > 0 && (
         <div className="mt-2 space-y-3">
-          {attachments.length > 0 &&
-            attachments.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between rounded-sm border-2 p-2"
-              >
-                <div>
-                  <Link
-                    href={item.url}
-                    target="_blank"
-                    className="hover:underline"
-                  >
-                    {item.title}
-                  </Link>
-                </div>
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="flex-shrink-0"
-                        onClick={() => onOpen(item.id)}
-                      >
-                        <Trash className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Delete attachment</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            ))}
+          {attachments.map((item) => (
+            <div key={item.id} className="flex items-center justify-between rounded-sm border-2 p-2">
+              <Link href={item.url} target="_blank" className="hover:underline">
+                {item.title}
+              </Link>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="flex-shrink-0"
+                      onClick={() => onOpen(item.id)}
+                    >
+                      <Trash className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete attachment</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          ))}
         </div>
       )}
+
       {isEditing && (
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-4 space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -156,13 +135,9 @@ export const AttachmentsForm = ({ attachments, chapterId }: Props) => {
                 <FormItem>
                   <FormLabel>Attachment</FormLabel>
                   <FormControl>
-                    {form.getValues("url") ? (
+                    {field.value ? (
                       <div className="flex items-center gap-x-3">
-                        <Link
-                          href={form.getValues("url")}
-                          className="hover:underline"
-                          target="_blank"
-                        >
+                        <Link href={field.value} target="_blank" className="hover:underline">
                           View File
                         </Link>
                         <Button
@@ -182,21 +157,20 @@ export const AttachmentsForm = ({ attachments, chapterId }: Props) => {
                           field.onChange(res[0].url);
                           toast.success("File uploaded");
                         }}
-                        onUploadError={(error: Error) => {
+                        onUploadError={(error) => {
                           console.log(error);
                           toast.error("File upload failed");
                         }}
                       />
                     )}
                   </FormControl>
-                  <FormDescription>Only Pdf file is allowed</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={isPending} type="submit">
-                Save
+                {isPending ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>

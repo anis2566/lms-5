@@ -44,7 +44,7 @@ const Courses = async ({ searchParams }: Props) => {
   const currentPage = parseInt(page, 10);
 
   const [courses, totalCourse] = await Promise.all([
-    await db.course.findMany({
+    db.course.findMany({
       where: {
         ...(name && {
           title: { contains: name, mode: "insensitive" },
@@ -57,19 +57,19 @@ const Courses = async ({ searchParams }: Props) => {
             id: true,
           },
         },
-        // purchases: {
-        //   select: {
-        //     id: true,
-        //   },
-        // },
+        purchases: {
+          select: {
+            id: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: "desc"
+        createdAt: sort === "asc" ? "asc" : "desc",
       },
       skip: (currentPage - 1) * itemsPerPage,
       take: itemsPerPage,
     }),
-    await db.course.count({
+    db.course.count({
       where: {
         ...(name && { title: { contains: name, mode: "insensitive" } }),
       },

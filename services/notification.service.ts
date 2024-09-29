@@ -10,6 +10,7 @@ type SendNotification = {
   };
   data: {
     course?: string;
+    redirectUrl?: string;
   };
 };
 

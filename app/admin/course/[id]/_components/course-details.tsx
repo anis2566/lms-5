@@ -1,10 +1,8 @@
 "use client";
 
 import { Chapter, Course } from "@prisma/client";
-import { useQuery } from "@tanstack/react-query";
-import { CircleDollarSign, LayoutDashboard, ListChecks } from "lucide-react";
+import { CircleDollarSign, LayoutDashboard, ListChecks, LucideIcon } from "lucide-react";
 
-import { GET_CATEGORIES } from "../action";
 import { Banner } from "./banner";
 import { IconBadge } from "@/components/icon-badge";
 import { TitleForm } from "./title-form";
@@ -15,25 +13,12 @@ import { PriceForm } from "./price-form";
 import { ChaptersForm } from "./chapter-form";
 import { Actions } from "./action";
 
-interface CourseWithChapter extends Course {
-  chapters: Chapter[];
-}
-
 interface Props {
-  course: CourseWithChapter;
+  course: Course;
   chapters: Chapter[];
 }
 
 export const CourseDetails = ({ course, chapters }: Props) => {
-  const { data: categories } = useQuery({
-    queryKey: ["get-categories-for-course"],
-    queryFn: async () => {
-      const res = await GET_CATEGORIES();
-      return res.categories;
-    },
-    staleTime: 60 * 60 * 1000,
-  });
-
   const requiredFields = [
     course.title,
     course.description,
@@ -43,12 +28,11 @@ export const CourseDetails = ({ course, chapters }: Props) => {
     chapters.some((chapter) => chapter.isPublished),
   ];
 
-  const totalFields = requiredFields.length;
-  const completedFields = requiredFields.filter(Boolean).length;
+  const completedFieldsCount = requiredFields.filter(Boolean).length;
+  const totalFieldsCount = requiredFields.length;
 
-  const completionText = `(${completedFields}/${totalFields})`;
-
-  const isComplete = requiredFields.every(Boolean);
+  const completionText = `(${completedFieldsCount}/${totalFieldsCount})`;
+  const isComplete = completedFieldsCount === totalFieldsCount;
 
   return (
     <>
@@ -57,52 +41,49 @@ export const CourseDetails = ({ course, chapters }: Props) => {
       )}
       <div>
         <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <h1 className="mt-6 text-2xl font-medium">Course setup</h1>
-            <span className="text-sm text-slate-700">
-              Complete all fields {completionText}
-            </span>
-          </div>
-          <Actions
-            disabled={!isComplete}
-            courseId={course.id}
-            isPublished={course.isPublished}
-          />
+          <Header title="Course setup" subtitle={`Complete all fields ${completionText}`} />
+          <Actions disabled={!isComplete} courseId={course.id} isPublished={course.isPublished} />
         </div>
+
         <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <div className="flex items-center gap-x-2">
-              <IconBadge icon={LayoutDashboard} />
-              <h2 className="text-xl">Customize your course</h2>
-            </div>
+            <SectionHeader icon={LayoutDashboard} title="Course details" />
             <TitleForm initialData={course} courseId={course.id} />
             <DescriptionForm initialData={course} courseId={course.id} />
             <ImageForm initialData={course} courseId={course.id} />
             <CategoryForm initialData={course} courseId={course.id} />
           </div>
+
           <div className="space-y-6">
             <div>
-              <div className="flex items-center gap-x-2">
-                <IconBadge icon={ListChecks} />
-                <h2 className="text-xl">Course chapters</h2>
-              </div>
+              <SectionHeader icon={ListChecks} title="Chapters" />
               <ChaptersForm chapters={chapters} courseId={course.id} />
             </div>
+
             <div>
-              <div className="flex items-center gap-x-2">
-                <IconBadge icon={CircleDollarSign} />
-                <h2 className="text-xl">Sell your course</h2>
-              </div>
+              <SectionHeader icon={CircleDollarSign} title="Price" />
               <PriceForm initialData={course} courseId={course.id} />
-              {/* <TeacherForm
-                initialData={course}
-                courseId={course.id}
-                teachers={teachers ?? []}
-              /> */}
             </div>
           </div>
         </div>
+
       </div>
     </>
   );
 };
+
+const Header = ({ title, subtitle }: { title: string; subtitle: string }) => (
+  <div className="flex items-center justify-between">
+    <div className="flex flex-col">
+      <h1 className="mt-6 text-2xl font-medium">{title}</h1>
+      <span className="text-sm text-slate-700">{subtitle}</span>
+    </div>
+  </div>
+);
+
+const SectionHeader = ({ icon: Icon, title }: { icon: React.ComponentType; title: string }) => (
+  <div className="flex items-center gap-x-2">
+    <IconBadge icon={Icon as LucideIcon} />
+    <h2 className="text-xl">{title}</h2>
+  </div>
+);

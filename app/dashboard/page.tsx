@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ContentLayout } from "./_components/content-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, FileQuestion, FileText } from "lucide-react";
+import { Bell, BookOpen, FileQuestion, FileText } from "lucide-react";
 import { db } from "@/lib/prisma";
 import { GET_USER } from "@/services/user.service";
 import { SubmissionStatus } from "@prisma/client";
@@ -48,7 +48,8 @@ const Dashboard = async () => {
     }),
     await db.assignmentSubmission.findMany({
       include: {
-        assignment: true
+        assignment: true,
+        chapter: true
       },
       orderBy: {
         createdAt: "desc"
@@ -110,30 +111,30 @@ const Dashboard = async () => {
             <CardDescription>You have {assignments} assignments pending.</CardDescription>
           </CardHeader>
           <CardContent>
-            {
-              recentAssignments.map((assignment) => (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Assignment</TableHead>
-                      <TableHead>Course</TableHead>
-                      <TableHead>Submitted At</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Assignment</TableHead>
+                  <TableHead>Course</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {
+                  recentAssignments.map((assignment) => (
+                    <TableRow key={assignment.id}>
                       <TableCell>{assignment.assignment.title}</TableCell>
+                      <TableCell>{assignment.chapter.title}</TableCell>
                       <TableCell>{assignment.status}</TableCell>
-                      <TableCell>{assignment.createdAt.toLocaleDateString()}</TableCell>
                     </TableRow>
-                  </TableBody>
-                </Table>
-              ))
-            }
+                  ))
+                }
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
-      {/* Notice Board */}
+
       <div>
         <Card>
           <CardHeader>
@@ -145,9 +146,11 @@ const Dashboard = async () => {
                 <div className="flex flex-col">
                   {
                     notices.map((notice) => (
-                      <div key={notice.id}>
-                        <h3>{notice.title}</h3>
-                        <p>{notice.content}</p>
+                      <div key={notice.id} className="flex items-center gap-x-2">
+                        <div className="flex items-center justify-center p-2 border border-primary rounded-full">
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <p>{notice.title}</p>
                       </div>
                     ))
                   }

@@ -1,42 +1,48 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
 import { CategorySchema, CategorySchemaType } from "../../schema";
 import { db } from "@/lib/prisma";
+import { IS_ADMIN } from "@/services/authorization";
 
 type EditCategory = {
   id: string;
   values: CategorySchemaType;
 };
+
 export const EDIT_CATEGORY = async ({ id, values }: EditCategory) => {
-  const { data, success } = CategorySchema.safeParse(values);
+  const { success, data } = CategorySchema.safeParse(values);
   if (!success) {
-    throw new Error("Invalid input value");
+    throw new Error(`Invalid input value`);
   }
 
-  const category = await db.category.findUnique({
-    where: {
-      id,
-    },
-  });
+  const isAdmin = await IS_ADMIN();
 
-  if (!category) {
-    throw new Error("Category not found");
+  if (!isAdmin) {
+    throw new Error("You are not authorized to edit a category");
   }
 
-  await db.category.update({
-    where: {
-      id,
-    },
-    data: {
-      ...data,
-    },
-  });
+  try {
+    const category = await db.category.findUnique({
+      where: { id },
+    });
 
-  revalidatePath("/admin/category");
+    if (!category) {
+      throw new Error("Category not found");
+    }
 
-  return {
-    success: "Category updated",
-  };
+    await db.category.update({
+      where: { id },
+      data,
+    });
+
+    revalidatePath("/admin/category");
+
+    return {
+      success: "Category updated successfully",
+    };
+  } catch (error) {
+    console.error("Error updating category:", error);
+    throw new Error("Failed to update category");
+  }
 };

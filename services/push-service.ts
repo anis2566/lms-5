@@ -26,6 +26,18 @@ export async function registerPushNotifications() {
   await sendPushSubscriptionToServer(subscription);
 }
 
+export async function unregisterPushNotifications() {
+  const existingSubscription = await getCurrentPushSubscription();
+
+  if (!existingSubscription) {
+    throw Error("No existing push subscription found");
+  }
+
+  await deletePushSubscriptionFromServer(existingSubscription);
+
+  await existingSubscription.unsubscribe();
+}
+
 export async function sendPushSubscriptionToServer(
   subscription: PushSubscription,
 ) {
@@ -37,5 +49,18 @@ export async function sendPushSubscriptionToServer(
 
   if (!response.ok) {
     throw Error("Failed to send push subscription to server");
+  }
+}
+
+export async function deletePushSubscriptionFromServer(
+  subscription: PushSubscription
+) {
+  const response = await fetch("/api/web-push/register", {
+    method: "DELETE",
+    body: JSON.stringify(subscription),
+  });
+
+  if (!response.ok) {
+    throw Error("Failed to delete push subscription from server");
   }
 }

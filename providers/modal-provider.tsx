@@ -9,6 +9,7 @@ import { DeleteAttachmentModal } from "@/app/admin/course/[id]/chapter/[chapterI
 import { CreateNoticeModal } from "@/app/admin/notice/_components/create-notice-modal";
 import { DeleteNoticeModal } from "@/app/admin/notice/_components/delete-modal";
 import { AnswerModal } from "@/app/admin/question/_components/answer-modal";
+import { DeleteQuestionModal } from "@/app/admin/question/_components/delete-modal";
 import { SubmissionModal } from "@/app/dashboard/assignment/[id]/[chapterId]/_components/submission-modal";
 
 export const ModalProvider = () => {
@@ -24,6 +25,7 @@ export const ModalProvider = () => {
       <AnswerModal />
       <CreateNoticeModal />
       <DeleteNoticeModal />
+      <DeleteQuestionModal />
     </>
   );
 };

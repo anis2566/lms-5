@@ -58,7 +58,7 @@ export const VERIFY_EMAIL = async (email: string) => {
     },
   });
 
-  return;
+  return
 };
 
 export const GET_ADMIN = async () => {

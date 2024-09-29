@@ -162,7 +162,7 @@ export const GET_CHAPTER = async ({ chapterId, courseId }: GetChapter) => {
       questions: [],
       isLocked: true,
       isPreviousChapterCompleted: false,
-      adminId: id
+      adminId: null
     };
   }
 };
@@ -229,14 +229,15 @@ export const CREATE_QUESTION = async ({
     });
 
     await Promise.all(pushPromises);
-
-    await sendNotification({
-      trigger: "question",
-      actor: { id: userId },
-      recipients: [id],
-      data: {},
-    });
   }
+  await sendNotification({
+    trigger: "question",
+    actor: { id: userId },
+    recipients: [id],
+    data: {
+      redirectUrl: "/admin/question",
+    },
+  });
 
   return newQuestion;
 };

@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Pencil } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Chapter } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -39,12 +39,12 @@ export const AccessForm = ({
 }: ChapterAccessFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const toggleEdit = useCallback(() => setIsEditing((prev) => !prev), []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      isFree: !!initialData.isFree,
+      isFree: initialData.isFree || false,
     },
   });
 
@@ -52,21 +52,15 @@ export const AccessForm = ({
     mutationFn: UPDATE_CHAPTER,
     onSuccess: (data) => {
       setIsEditing(false);
-      toast.success(data?.success, {
-        id: "update-chapter",
-      });
+      toast.success(data?.success, { id: "update-chapter" });
     },
     onError: (error) => {
-      toast.error(error.message, {
-        id: "update-chapter",
-      });
+      toast.error(error.message, { id: "update-chapter" });
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    toast.loading("Chapter updating...", {
-      id: "update-chapter",
-    });
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    toast.loading("Updating chapter...", { id: "update-chapter" });
     updateChapter({
       id: chapterId,
       courseId,
@@ -79,9 +73,7 @@ export const AccessForm = ({
       <div className="flex items-center justify-between font-medium">
         Access
         <Button onClick={toggleEdit} variant="ghost">
-          {isEditing ? (
-            <>Cancel</>
-          ) : (
+          {isEditing ? "Cancel" : (
             <>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
@@ -89,6 +81,7 @@ export const AccessForm = ({
           )}
         </Button>
       </div>
+      
       {!isEditing && (
         <p
           className={cn(
@@ -96,19 +89,13 @@ export const AccessForm = ({
             !initialData.isFree && "italic text-slate-500",
           )}
         >
-          {initialData.isFree ? (
-            <>This chapter is free for preview.</>
-          ) : (
-            <>This chapter is not free.</>
-          )}
+          {initialData.isFree ? "This chapter is free for preview." : "This chapter is not free."}
         </p>
       )}
+      
       {isEditing && (
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-4 space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
             <FormField
               control={form.control}
               name="isFree"
@@ -118,12 +105,12 @@ export const AccessForm = ({
                     <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      disabled={isPending}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormDescription>
-                      Toggle this box if you want to make this chapter free for
-                      preview
+                      Toggle this box to make the chapter free for preview
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -131,7 +118,7 @@ export const AccessForm = ({
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={isPending} type="submit">
-                Save
+                {isPending ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>

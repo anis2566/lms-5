@@ -29,7 +29,7 @@ import { EmptyData } from "@/components/empty-data";
 interface CourseWithFeatures extends Course {
   category: Category | null;
   chapters: { id: string }[];
-  //   purchases: { id: string }[];
+  purchases: { id: string }[];
 }
 
 interface Props {
@@ -76,7 +76,7 @@ export const CourseList = ({ courses }: Props) => {
               {course.chapters?.length}
             </TableCell>
             <TableCell className="px-2 py-2">&#2547;{course.price}</TableCell>
-            <TableCell className="px-2 py-2">{0}</TableCell>
+            <TableCell className="px-2 py-2">{course.purchases.length}</TableCell>
             <TableCell className="px-2 py-2">
               <Badge
                 className={cn(

@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Pencil } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Chapter } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-
 import { cn } from "@/lib/utils";
 import { Preview } from "@/components/preview";
 import { Editor } from "@/components/editor";
@@ -30,7 +29,7 @@ interface ChapterDescriptionFormProps {
 }
 
 const formSchema = z.object({
-  description: z.string().min(5, { message: "required" }),
+  description: z.string().min(5, { message: "Description is required" }),
 });
 
 export const DescriptionForm = ({
@@ -40,7 +39,7 @@ export const DescriptionForm = ({
 }: ChapterDescriptionFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const toggleEdit = useCallback(() => setIsEditing((prev) => !prev), []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,21 +52,15 @@ export const DescriptionForm = ({
     mutationFn: UPDATE_CHAPTER,
     onSuccess: (data) => {
       setIsEditing(false);
-      toast.success(data?.success, {
-        id: "update-chapter",
-      });
+      toast.success(data?.success, { id: "update-chapter" });
     },
     onError: (error) => {
-      toast.error(error.message, {
-        id: "update-chapter",
-      });
+      toast.error(error.message, { id: "update-chapter" });
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    toast.loading("Chapter updating...", {
-      id: "update-chapter",
-    });
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    toast.loading("Updating chapter...", { id: "update-chapter" });
     updateChapter({
       id: chapterId,
       courseId,
@@ -80,9 +73,7 @@ export const DescriptionForm = ({
       <div className="flex items-center justify-between font-medium">
         Description
         <Button onClick={toggleEdit} variant="ghost">
-          {isEditing ? (
-            <>Cancel</>
-          ) : (
+          {isEditing ? "Cancel" : (
             <>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
@@ -90,6 +81,7 @@ export const DescriptionForm = ({
           )}
         </Button>
       </div>
+
       {!isEditing && (
         <div
           className={cn(
@@ -97,18 +89,17 @@ export const DescriptionForm = ({
             !initialData.description && "italic text-slate-500",
           )}
         >
-          {!initialData.description && "No description"}
-          {initialData.description && (
+          {initialData.description ? (
             <Preview value={initialData.description} />
+          ) : (
+            "No description"
           )}
         </div>
       )}
+
       {isEditing && (
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-4 space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
             <FormField
               control={form.control}
               name="description"
@@ -123,7 +114,7 @@ export const DescriptionForm = ({
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={isPending} type="submit">
-                Save
+                {isPending ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>

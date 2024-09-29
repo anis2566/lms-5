@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Pencil } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Course } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -39,7 +39,9 @@ export const DescriptionForm = ({
 }: DescriptionFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const toggleEdit = useCallback(() => {
+    setIsEditing((current) => !current);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,42 +65,43 @@ export const DescriptionForm = ({
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    toast.loading("Course updating...", {
-      id: "update-course",
-    });
-    updateCourse({
-      id: courseId,
-      values: { ...initialData, description: values.description },
-    });
-  };
+  const onSubmit = useCallback(
+    (values: z.infer<typeof formSchema>) => {
+      toast.loading("Course updating...", {
+        id: "update-course",
+      });
+      updateCourse({
+        id: courseId,
+        values: { ...initialData, description: values.description },
+      });
+    },
+    [updateCourse, courseId, initialData]
+  );
 
   return (
     <div className="mt-6 rounded-md border bg-card p-4">
       <div className="flex items-center justify-between font-medium">
-        Course description
+        <span>Description</span>
         <Button onClick={toggleEdit} variant="ghost">
-          {isEditing ? (
-            <>Cancel</>
-          ) : (
+          {isEditing ? "Cancel" : (
             <>
               <Pencil className="mr-2 h-4 w-4" />
-              Edit description
+              Edit 
             </>
           )}
         </Button>
       </div>
-      {!isEditing && (
+
+      {!isEditing ? (
         <p
           className={cn(
             "mt-2 text-sm",
-            !initialData.description && "italic text-slate-500",
+            !initialData.description && "italic text-slate-500"
           )}
         >
           {initialData.description || "No description"}
         </p>
-      )}
-      {isEditing && (
+      ) : (
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -122,7 +125,7 @@ export const DescriptionForm = ({
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={isPending} type="submit">
-                Save
+                {isPending ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>

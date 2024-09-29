@@ -17,7 +17,7 @@ import { CourseDetails } from "./_components/course-details";
 
 export const metadata: Metadata = {
   title: "LMS | Course | Details",
-  description: "Next generatation learning platform.",
+  description: "Next generation learning platform.",
 };
 
 interface Props {
@@ -28,28 +28,20 @@ interface Props {
 
 const Course = async ({ params: { id } }: Props) => {
   const course = await db.course.findUnique({
-    where: {
-      id,
-    },
+    where: { id },
     include: {
       chapters: {
-        orderBy: {
-          position: "asc",
-        },
+        orderBy: { position: "asc" },
       },
     },
   });
 
-  if (!course) redirect("/admin");
+  if (!course) {
+    console.error(`Course with id ${id} not found`);
+    return redirect("/admin");
+  }
 
-  const chapters = await db.chapter.findMany({
-    where: {
-      courseId: id,
-    },
-    orderBy: {
-      position: "asc",
-    },
-  });
+  const { chapters, ...courseWithoutChapters } = course;
 
   return (
     <ContentLayout title="Course">
@@ -73,7 +65,7 @@ const Course = async ({ params: { id } }: Props) => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <CourseDetails course={course} chapters={chapters} />
+      <CourseDetails course={courseWithoutChapters} chapters={chapters} />
     </ContentLayout>
   );
 };

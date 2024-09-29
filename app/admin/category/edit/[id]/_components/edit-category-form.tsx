@@ -214,7 +214,7 @@ export const EditCategoryForm = ({ category }: Props) => {
               disabled={isPending}
               className="w-full max-w-[130px]"
             >
-              Update
+              {isPending ? "Updating..." : "Update"}
             </Button>
           </form>
         </Form>

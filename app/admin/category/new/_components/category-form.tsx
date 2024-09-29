@@ -79,7 +79,7 @@ export const CategoryForm = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create New Category</CardTitle>
+        <CardTitle>New Category</CardTitle>
         <CardDescription>
           Add a new category to organize your content.
         </CardDescription>
@@ -209,7 +209,7 @@ export const CategoryForm = () => {
               disabled={isPending}
               className="w-full max-w-[130px]"
             >
-              Submit
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Form>

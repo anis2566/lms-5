@@ -21,11 +21,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { unregisterPushNotifications } from "@/services/push-service";
 
 export function UserNav() {
   const { data: session } = useSession();
 
   const handleSignOut = async () => {
+    try {
+      await unregisterPushNotifications();
+    } catch (error) {
+      console.error("Error during push notification unregistration:", error);
+    }
     await signOut();
   };
 

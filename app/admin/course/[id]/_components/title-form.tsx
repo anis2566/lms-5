@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Pencil } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Course } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -27,15 +27,15 @@ interface TitleFormProps {
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, {
-    message: "required",
-  }),
+  title: z.string().min(1, { message: "required" }),
 });
 
 export const TitleForm = ({ initialData, courseId }: TitleFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const toggleEdit = useCallback(() => {
+    setIsEditing((current) => !current);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,49 +46,43 @@ export const TitleForm = ({ initialData, courseId }: TitleFormProps) => {
     mutationFn: UPDATE_COURSE,
     onSuccess: (data) => {
       setIsEditing(false);
-      toast.success(data?.success, {
-        id: "update-course",
-      });
+      toast.success(data?.success, { id: "update-course" });
     },
     onError: (error) => {
-      toast.error(error.message, {
-        id: "update-course",
-      });
+      toast.error(error.message, { id: "update-course" });
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    toast.loading("Course updating...", {
-      id: "update-course",
-    });
-    updateCourse({
-      id: courseId,
-      values: { ...initialData, title: values.title },
-    });
-  };
+  const onSubmit = useCallback(
+    (values: z.infer<typeof formSchema>) => {
+      toast.loading("Course updating...", { id: "update-course" });
+      updateCourse({
+        id: courseId,
+        values: { ...initialData, title: values.title },
+      });
+    },
+    [updateCourse, courseId, initialData]
+  );
 
   return (
     <div className="mt-6 rounded-md border bg-card p-4">
       <div className="flex items-center justify-between font-medium">
-        Course title
+        <span>Title</span>
         <Button onClick={toggleEdit} variant="ghost">
-          {isEditing ? (
-            <>Cancel</>
-          ) : (
+          {isEditing ? "Cancel" : (
             <>
               <Pencil className="mr-2 h-4 w-4" />
-              Edit title
+              Edit
             </>
           )}
         </Button>
       </div>
-      {!isEditing && <p className="mt-2 text-sm">{initialData.title}</p>}
-      {isEditing && (
+
+      {!isEditing ? (
+        <p className="mt-2 text-sm">{initialData.title}</p>
+      ) : (
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-4 space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -107,7 +101,7 @@ export const TitleForm = ({ initialData, courseId }: TitleFormProps) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={isPending} type="submit">
-                Save
+                {isPending ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>

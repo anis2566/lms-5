@@ -1,8 +1,10 @@
 "use server";
 
-import { db } from "@/lib/prisma";
 import { Course } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+
+import { db } from "@/lib/prisma";
+import { IS_ADMIN } from "@/services/authorization";
 
 export const GET_CATEGORIES = async () => {
   const categories = await db.category.findMany({
@@ -18,35 +20,39 @@ export const GET_CATEGORIES = async () => {
 
 type UpdateCourse = {
   id: string;
-  values: Course;
+  values: Partial<Course>;
 };
 
 export const UPDATE_COURSE = async ({ id, values }: UpdateCourse) => {
+  if (!values || Object.keys(values).length === 0) {
+    throw new Error("No values provided for update");
+  }
+
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to edit a course");
+  }
+
   const course = await db.course.findUnique({
-    where: {
-      id,
-    },
+    where: { id },
   });
 
   if (!course) {
     throw new Error("Course not found");
   }
 
-  const { id: courseId, ...rest } = values;
+  const { id: courseId, ...updateData } = values;
 
   await db.course.update({
-    where: {
-      id,
-    },
-    data: {
-      ...rest,
-    },
+    where: { id },
+    data: updateData,
   });
 
   revalidatePath(`/admin/course/${id}`);
 
   return {
-    success: "Course updated",
+    success: "Course updated successfully",
   };
 };
 
@@ -55,6 +61,12 @@ type CreateChapter = {
   title: string;
 };
 export const CREATE_CHAPTER = async ({ courseId, title }: CreateChapter) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to create a chapter");
+  }
+
   const chapter = await db.chapter.findFirst({
     where: {
       title,
@@ -99,6 +111,12 @@ interface ReorderChapter {
 }
 
 export const REORDER_CHAPTER = async ({ list }: ReorderChapter) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to reorder a chapter");
+  }
+
   const transaction = list.map((item) => {
     return db.chapter.update({
       where: { id: item.id },
@@ -119,6 +137,12 @@ export const REORDER_CHAPTER = async ({ list }: ReorderChapter) => {
 };
 
 export const PUBLISH_COURSE = async (id: string) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to publish a course");
+  }
+
   const course = await db.course.findUnique({
     where: {
       id,
@@ -146,6 +170,12 @@ export const PUBLISH_COURSE = async (id: string) => {
 };
 
 export const UNPUBLISH_COURSE = async (id: string) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to unpublish a course");
+  }
+
   const course = await db.course.findUnique({
     where: {
       id,
@@ -173,6 +203,12 @@ export const UNPUBLISH_COURSE = async (id: string) => {
 };
 
 export const DELETE_COURSE = async (id: string) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to delete a course");
+  }
+
   const course = await db.course.findUnique({
     where: {
       id,

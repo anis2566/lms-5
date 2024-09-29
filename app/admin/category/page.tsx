@@ -44,9 +44,16 @@ const Category = async ({ searchParams }: Props) => {
   const currentPage = parseInt(page, 10);
 
   const [categories, totalCategory] = await Promise.all([
-    await db.category.findMany({
+    db.category.findMany({
       where: {
         ...(name && { name: { contains: name, mode: "insensitive" } }),
+      },
+      include: {
+        courses: {
+          select: {
+            id: true,
+          },
+        },
       },
       orderBy: {
         createdAt: sort === "asc" ? "asc" : "desc",
@@ -54,7 +61,7 @@ const Category = async ({ searchParams }: Props) => {
       skip: (currentPage - 1) * itemsPerPage,
       take: itemsPerPage,
     }),
-    await db.category.count({
+    db.category.count({
       where: {
         ...(name && { name: { contains: name, mode: "insensitive" } }),
       },

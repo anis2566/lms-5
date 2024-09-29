@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 
 import { IconBadge } from "@/components/icon-badge";
 import { useFeedbackSubmission } from "@/hooks/use-assignment-submission";
+import { EmptyData } from "@/components/empty-data";
 
 interface ChapterWithCourse extends Chapter {
     course: Course
@@ -51,9 +52,7 @@ export const SubmissionList = ({ submissions }: Props) => {
     };
 
     if (submissions.length === 0) return (
-        <div className="flex flex-col items-center justify-between gap-y-5">
-            <h1 className="text-md italic text-center">No Submissions Found</h1>
-        </div>
+        <EmptyData title="No submissions found" />
     )
 
     return (

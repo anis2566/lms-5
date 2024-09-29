@@ -1,18 +1,16 @@
-import { db } from "@/lib/prisma";
-import { sendNotification } from "@/services/notification.service";
 import { Role } from "@prisma/client";
 import { NextResponse } from "next/server";
 import webPush, { WebPushError } from "web-push";
 
+import { db } from "@/lib/prisma";
+import { sendNotification } from "@/services/notification.service";
+
 export async function POST(request: Request) {
   try {
-    // Get the URL from the request
     const url = new URL(request.url);
 
-    // Extract query parameters
     const queryParams = Object.fromEntries(url.searchParams.entries());
 
-    // Parse the POST body (URL-encoded data)
     const data = await request.text();
     const params = new URLSearchParams(data);
     const paymentData = Object.fromEntries(params.entries());
@@ -88,16 +86,15 @@ export async function POST(request: Request) {
           });
 
           await Promise.all(pushPromises);
-
-          await sendNotification({
-            trigger: "new-purchase",
-            actor: { id: user?.id || "" },
-            recipients: [admin?.id || ""],
-            data: {
-              course: course?.title,
-            },
-          });
         }
+        await sendNotification({
+          trigger: "purchase",
+          actor: { id: user?.id || "" },
+          recipients: [admin?.id || ""],
+          data: {
+            course: course?.title,
+          },
+        });
       }
 
       return NextResponse.redirect(

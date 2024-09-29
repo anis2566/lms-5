@@ -2,11 +2,13 @@
 
 import * as z from "zod";
 import { Pencil, PlusCircle, ImageIcon, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Course } from "@prisma/client";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
   Form,
@@ -15,8 +17,6 @@ import {
   FormMessage,
   FormItem,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 
 import { UploadDropzone } from "@/lib/uploadthing";
@@ -36,7 +36,9 @@ const formSchema = z.object({
 export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const toggleEdit = useCallback(() => {
+    setIsEditing((current) => !current);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,7 +62,7 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
     toast.loading("Course updating...", {
       id: "update-course",
     });
@@ -68,34 +70,23 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
       id: courseId,
       values: { ...initialData, imageUrl: values.imageUrl },
     });
-  };
+  }, [updateCourse, courseId, initialData]);
 
   return (
     <div className="mt-6 rounded-md border bg-card p-4">
       <div className="flex items-center justify-between font-medium">
-        Course thumbnail
+        Thumbnail
         <Button onClick={toggleEdit} variant="ghost">
-          {isEditing && <>Cancel</>}
-          {!isEditing && !initialData.imageUrl && (
+          {isEditing ? "Cancel" : (
             <>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add an image
-            </>
-          )}
-          {!isEditing && initialData.imageUrl && (
-            <>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit image
+              {initialData.imageUrl ? <Pencil className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+              {initialData.imageUrl ? "Edit" : "Add"}
             </>
           )}
         </Button>
       </div>
-      {!isEditing &&
-        (!initialData.imageUrl ? (
-          <div className="flex h-60 items-center justify-center rounded-md bg-slate-200">
-            <ImageIcon className="h-10 w-10 text-slate-500" />
-          </div>
-        ) : (
+      {!isEditing && (
+        initialData.imageUrl ? (
           <div className="relative mt-2 aspect-video">
             <Image
               alt="Upload"
@@ -104,7 +95,12 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
               src={initialData.imageUrl}
             />
           </div>
-        ))}
+        ) : (
+          <div className="flex h-60 items-center justify-center rounded-md bg-slate-200">
+            <ImageIcon className="h-10 w-10 text-slate-500" />
+          </div>
+        )
+      )}
       {isEditing && (
         <Form {...form}>
           <form
@@ -158,7 +154,7 @@ export const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
               </div>
               <div className="flex justify-end">
                 <Button disabled={isPending} type="submit">
-                  Save
+                  {isPending ? "Saving..." : "Save"}
                 </Button>
               </div>
             </div>

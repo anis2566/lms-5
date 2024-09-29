@@ -1,7 +1,7 @@
 "use client"
 
 import { Chapter, Course, Question, QuestionAnswer, User } from "@prisma/client"
-import { BookOpen, Check, FileQuestion } from "lucide-react"
+import { BookOpen, Check, FileQuestion, Trash2 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -9,6 +9,8 @@ import { IconBadge } from "@/components/icon-badge"
 import { Badge } from "@/components/ui/badge"
 
 import { useQuestionAnswer } from "@/hooks/use-question-answer"
+import { useQuestion } from "@/hooks/use-question"
+import { EmptyData } from "@/components/empty-data"
 
 
 interface ChapterWithCourse extends Chapter {
@@ -27,6 +29,11 @@ interface Props {
 
 export const QuestionList = ({ questions }: Props) => {
     const { onOpen } = useQuestionAnswer();
+    const { onOpen: onOpenDelete } = useQuestion();
+
+    if (questions.length === 0) {
+        return <EmptyData title="No questions found" />
+    }
 
     return (
         <div className="space-y-5">
@@ -48,9 +55,14 @@ export const QuestionList = ({ questions }: Props) => {
                                     </p>
                                 </div>
                             </div>
-                            <Button size="sm" onClick={() => onOpen(question.id)}>
-                                Reply
-                            </Button>
+                            <div className="flex items-center gap-x-2">
+                                <Button size="sm" variant="destructive" onClick={() => onOpenDelete(question.id)}>
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
+                                <Button size="sm" onClick={() => onOpen(question.id)}>
+                                    Reply
+                                </Button>
+                            </div>
                         </div>
                         <div className="space-y-2 border p-2 rounded-md">
                             <div className="flex items-center gap-x-2">

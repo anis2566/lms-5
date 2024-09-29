@@ -11,6 +11,7 @@ import {
   AttachmentSchema,
   AttachmentSchemaType,
 } from "./schema";
+import { IS_ADMIN } from "@/services/authorization";
 
 type UpdateChapter = {
   id: string;
@@ -23,6 +24,12 @@ export const UPDATE_CHAPTER = async ({
   values,
   courseId,
 }: UpdateChapter) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to edit a chapter");
+  }
+
   const chapter = await db.chapter.findUnique({
     where: {
       id,
@@ -34,7 +41,7 @@ export const UPDATE_CHAPTER = async ({
     throw new Error("Chapter not found");
   }
 
-  const { id: chapterId, ...rest } = values;
+  const { id: chapterId, courseId: _, ...rest } = values;
 
   await db.chapter.update({
     where: {
@@ -55,9 +62,14 @@ export const UPDATE_CHAPTER = async ({
 
 export const CREATE_ATTACHMENT = async (values: AttachmentSchemaType) => {
   const { data, success } = AttachmentSchema.safeParse(values);
-
   if (!success) {
     throw new Error("Invalid input value");
+  }
+
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to create an attachment");
   }
 
   const chapter = await db.chapter.findUnique({
@@ -65,52 +77,53 @@ export const CREATE_ATTACHMENT = async (values: AttachmentSchemaType) => {
       id: data.chapterId,
     },
   });
-
-  if (!chapter) throw new Error("Chapter not found");
+  if (!chapter) {
+    throw new Error("Chapter not found");
+  }
 
   await db.attachment.create({
-    data: {
-      ...data,
-    },
+    data: { ...data },
   });
 
   revalidatePath(`/admin/course/${chapter.courseId}/chapter/${data.chapterId}`);
 
-  return {
-    success: "Attachment created",
-  };
+  return { success: "Attachment created" };
 };
 
 export const DELETE_ATTACHMENT = async (id: string) => {
-  const attachment = await db.attachment.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      chapter: true,
-    },
-  });
+  const isAdmin = await IS_ADMIN();
 
-  if (!attachment) {
-    throw new Error("Attachment not found");
+  if (!isAdmin) {
+    throw new Error("You are not authorized to delete an attachment");
   }
 
+  const attachment = await db.attachment
+    .findUniqueOrThrow({
+      where: { id },
+      include: { chapter: true },
+    })
+    .catch(() => {
+      throw new Error("Attachment not found");
+    });
+
   await db.attachment.delete({
-    where: {
-      id,
-    },
+    where: { id },
   });
 
   revalidatePath(
     `/admin/course/${attachment.chapter.courseId}/chapter/${attachment.chapterId}`,
   );
 
-  return {
-    success: "Attachment deleted",
-  };
+  return { success: "Attachment deleted" };
 };
 
 export const GET_CREDENTIALS = async (title: string) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to get credentials");
+  }
+
   const res = await fetch(
     `https://dev.vdocipher.com/api/videos?title=${title}`,
     {
@@ -136,6 +149,12 @@ export const GET_CREDENTIALS = async (title: string) => {
 };
 
 export const UPLOAD_VIDEO = async (formData: FormData) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to upload a video");
+  }
+
   const uploadLink = formData.get("uploadLink") as string;
   const videoId = formData.get("videoId") as string;
   const chapterId = formData.get("chapterId") as string;
@@ -197,6 +216,12 @@ export const UPLOAD_VIDEO = async (formData: FormData) => {
 };
 
 export const PUBLISH_CHAPTER = async (id: string) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to publish a chapter");
+  }
+
   const chapter = await db.chapter.findUnique({
     where: {
       id,
@@ -224,6 +249,12 @@ export const PUBLISH_CHAPTER = async (id: string) => {
 };
 
 export const UNPUBLISH_CHAPTER = async (id: string) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to unpublish a chapter");
+  }
+
   const chapter = await db.chapter.findUnique({
     where: {
       id,
@@ -251,6 +282,12 @@ export const UNPUBLISH_CHAPTER = async (id: string) => {
 };
 
 export const DELETE_CHAPTER = async (id: string) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to delete a chapter");
+  }
+
   const chapter = await db.chapter.findUnique({
     where: {
       id,
@@ -289,6 +326,12 @@ export const CREATE_ASSIGNMENT = async ({
     throw new Error("Invalid input value");
   }
 
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to create an assignment");
+  }
+
   const chapter = await db.chapter.findUnique({
     where: {
       id: chapterId,
@@ -299,7 +342,11 @@ export const CREATE_ASSIGNMENT = async ({
     throw new Error("Chapter not found");
   }
 
-  const assignment = await db.assignment.findFirst({});
+  const assignment = await db.assignment.findFirst({
+    where: {
+      chapterId,
+    },
+  });
 
   if (assignment) {
     throw new Error("Assignment already exists");
@@ -320,30 +367,29 @@ export const CREATE_ASSIGNMENT = async ({
 };
 
 export const DELETE_ASSIGNMENT = async (id: string) => {
+  const isAdmin = await IS_ADMIN();
+
+  if (!isAdmin) {
+    throw new Error("You are not authorized to delete an assignment");
+  }
+
   const assignment = await db.assignment.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      chapter: true,
-    },
+    where: { id },
+    include: { chapter: true },
   });
 
   if (!assignment) {
     throw new Error("Assignment not found");
   }
 
-  await db.assignment.delete({
-    where: {
-      id,
-    },
-  });
+  const {
+    chapter: { courseId },
+    chapterId,
+  } = assignment;
 
-  revalidatePath(
-    `/admin/course/${assignment.chapter.courseId}/chapter/${assignment.chapterId}`,
-  );
+  await db.assignment.delete({ where: { id } });
 
-  return {
-    success: "Assignment deleted",
-  };
+  revalidatePath(`/admin/course/${courseId}/chapter/${chapterId}`);
+
+  return { success: "Assignment deleted successfully" };
 };

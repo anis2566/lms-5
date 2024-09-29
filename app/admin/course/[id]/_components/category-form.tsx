@@ -4,8 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Pencil } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback } from "react";
 import { Course } from "@prisma/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -41,9 +40,9 @@ const formSchema = z.object({
 export const CategoryForm = ({ initialData, courseId }: CategoryFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const toggleEdit = () => setIsEditing((current) => !current);
-
-  const router = useRouter();
+  const toggleEdit = useCallback(() => {
+    setIsEditing((current) => !current);
+  }, []);
 
   const { data: categories } = useQuery({
     queryKey: ["get-categories-for-course"],
@@ -76,7 +75,7 @@ export const CategoryForm = ({ initialData, courseId }: CategoryFormProps) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
     toast.loading("Course updating...", {
       id: "update-course",
     });
@@ -84,19 +83,19 @@ export const CategoryForm = ({ initialData, courseId }: CategoryFormProps) => {
       id: courseId,
       values: { ...initialData, categoryId: values.categoryId },
     });
-  };
+  }, [updateCourse, courseId, initialData]);
 
   return (
     <div className="mt-6 rounded-md border bg-card p-4">
       <div className="flex items-center justify-between font-medium">
-        Course category
+        Category
         <Button onClick={toggleEdit} variant="ghost">
           {isEditing ? (
             <>Cancel</>
           ) : (
             <>
               <Pencil className="mr-2 h-4 w-4" />
-              Edit category
+              Edit
             </>
           )}
         </Button>
@@ -150,7 +149,7 @@ export const CategoryForm = ({ initialData, courseId }: CategoryFormProps) => {
             />
             <div className="flex items-center gap-x-2">
               <Button disabled={isPending} type="submit">
-                Save
+                {isPending ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>

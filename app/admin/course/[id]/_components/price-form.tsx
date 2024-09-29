@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Pencil } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Course } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -28,13 +28,13 @@ interface PriceFormProps {
 }
 
 const formSchema = z.object({
-  price: z.coerce.number(),
+  price: z.coerce.number().min(0, "Price must be a positive number"),
 });
 
 export const PriceForm = ({ initialData, courseId }: PriceFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const toggleEdit = useCallback(() => setIsEditing((current) => !current), []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,7 +43,7 @@ export const PriceForm = ({ initialData, courseId }: PriceFormProps) => {
     },
   });
 
-  const { mutate: updateCourse, isPending } = useMutation({
+  const { mutate: updateCourse, isPending: isUpdating } = useMutation({
     mutationFn: UPDATE_COURSE,
     onSuccess: (data) => {
       setIsEditing(false);
@@ -58,47 +58,37 @@ export const PriceForm = ({ initialData, courseId }: PriceFormProps) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    toast.loading("Course updating...", {
-      id: "update-course",
-    });
-    updateCourse({
-      id: courseId,
-      values: { ...initialData, price: values.price },
-    });
-  };
+  const onSubmit = useCallback(
+    (values: z.infer<typeof formSchema>) => {
+      toast.loading("Updating course...", {
+        id: "update-course",
+      });
+      updateCourse({
+        id: courseId,
+        values: { ...initialData, price: values.price },
+      });
+    },
+    [updateCourse, courseId, initialData]
+  );
 
   return (
     <div className="mt-6 rounded-md border bg-card p-4">
       <div className="flex items-center justify-between font-medium">
-        Course price
+        Price
         <Button onClick={toggleEdit} variant="ghost">
-          {isEditing ? (
-            <>Cancel</>
-          ) : (
-            <>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit price
-            </>
-          )}
+          {isEditing ? "Cancel" : <><Pencil className="mr-2 h-4 w-4" /> Edit</>}
         </Button>
       </div>
+
       {!isEditing && (
-        <p
-          className={cn(
-            "mt-2 text-sm",
-            !initialData.price && "italic text-slate-500",
-          )}
-        >
+        <p className={cn("mt-2 text-sm", !initialData.price && "italic text-slate-500")}>
           {initialData.price ? formatPrice(initialData.price) : "No price"}
         </p>
       )}
+
       {isEditing && (
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-4 space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
             <FormField
               control={form.control}
               name="price"
@@ -108,7 +98,7 @@ export const PriceForm = ({ initialData, courseId }: PriceFormProps) => {
                     <Input
                       type="number"
                       step="0.01"
-                      disabled={isPending}
+                      disabled={isUpdating}
                       placeholder="Set a price for your course"
                       {...field}
                     />
@@ -118,8 +108,8 @@ export const PriceForm = ({ initialData, courseId }: PriceFormProps) => {
               )}
             />
             <div className="flex items-center gap-x-2">
-              <Button disabled={isPending} type="submit">
-                Save
+              <Button disabled={isUpdating} type="submit">
+                {isUpdating ? "Saving..." : "Save"}
               </Button>
             </div>
           </form>

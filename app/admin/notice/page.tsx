@@ -16,23 +16,44 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+
 import { ContentLayout } from "../_components/content-layout";
 import { NewButton } from "./_components/new-button";
 import { db } from "@/lib/prisma";
 import { NoticeList } from "./_components/notice-list";
+import { Header } from "./_components/header";
+import { CustomPagination } from "@/components/custom-pagination";
 
 export const metadata: Metadata = {
     title: "LMS | Notice",
     description: "Next generatation learning platform.",
 };
 
-const Notice = async () => {
+interface Props {
+    searchParams: {
+        page: string;
+        perPage: string;
+        sort: string;
+    }
+}
 
-    const notices = await db.notice.findMany({
-        orderBy: {
-            createdAt: "desc",
-        },
-    });
+const Notice = async ({ searchParams }: Props) => {
+    const { page = "1", perPage = "5", sort = "desc" } = searchParams;
+    const itemsPerPage = parseInt(perPage, 10);
+    const currentPage = parseInt(page, 10);
+
+    const [notices, totalNotices] = await Promise.all([
+        db.notice.findMany({
+            orderBy: {
+                ...(sort === "asc" ? { createdAt: "asc" } : { createdAt: "desc" }),
+            },
+            skip: (currentPage - 1) * itemsPerPage,
+            take: itemsPerPage,
+        }),
+        db.notice.count(),
+    ]);
+
+    const totalPage = Math.ceil(totalNotices / itemsPerPage);
 
     return (
         <ContentLayout title="Notice">
@@ -57,8 +78,10 @@ const Notice = async () => {
                     <CardTitle>Notice</CardTitle>
                     <CardDescription>Manage your notice here.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                    <Header />
                     <NoticeList notices={notices} />
+                    <CustomPagination totalPage={totalPage} />
                 </CardContent>
             </Card>
         </ContentLayout>
