@@ -5,7 +5,6 @@ import { Category, Chapter, Course } from "@prisma/client";
 
 import { Badge } from "@/components/ui/badge";
 
-// import { CourseProgress } from "../course/course-progress";
 import { formatPrice, getVideoLength } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IconBadge } from "./icon-badge";
@@ -24,12 +23,6 @@ interface Props {
 }
 
 export const CourseCard = ({ course, purchased }: Props) => {
-  const handleBuyClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    // Add your buy logic here
-    console.log("Buy button clicked for course:", course.id);
-  };
-
   return (
     <div className="group h-full overflow-hidden rounded-lg border p-3 transition hover:shadow-sm">
       <Link href={`/dashboard/courses/${course.id}`}>
@@ -68,7 +61,7 @@ export const CourseCard = ({ course, purchased }: Props) => {
           </div>
         </div>
       </Link>
-      {course.progress ? (
+      {purchased || course.progress ? (
         <CourseProgress
           variant={course.progress === 100 ? "success" : "default"}
           size="sm"

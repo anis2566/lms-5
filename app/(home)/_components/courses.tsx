@@ -1,17 +1,13 @@
 "use client";
 
 import { Category, Chapter, Course } from "@prisma/client";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { buttonVariants } from "@/components/ui/button";
 
 import { CourseCard } from "@/components/course-card";
+import { cn } from "@/lib/utils";
 
 interface CourseWithFeatures extends Course {
   category: Category | null;
@@ -27,11 +23,11 @@ export const Courses = ({ courses }: Props) => {
   const displayCourses = courses.slice(0, 5);
 
   if (displayCourses.length === 0) {
-    return null; // Or return a message that no courses are available
+    return null;
   }
 
   return (
-    <section className="container mx-auto w-full max-w-screen-xl py-24 sm:py-32">
+    <section className="container mx-auto w-full max-w-screen-xl py-10">
       <div className="space-y-8 text-center">
         <Badge variant="outline" className="rounded-full py-2 text-sm">
           <span className="mr-2 text-primary">
@@ -45,17 +41,12 @@ export const Courses = ({ courses }: Props) => {
         Explore our most popular courses.
       </p>
 
-      <Carousel className="relative mx-auto w-full max-w-screen-xl pt-10">
-        <CarouselContent>
-          {displayCourses.map((course, i) => (
-            <CarouselItem key={i} className="md:basis-1/5">
-              <CourseCard course={course} purchased={false} />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="absolute -left-5 top-1/2 z-50 -translate-y-1/2 transform" />
-        <CarouselNext className="absolute -right-5 top-1/2 z-50 -translate-y-1/2 transform" />
-      </Carousel>
+      <div className="grid md:grid-cols-4 gap-6 mt-10">
+        {displayCourses.map((course, i) => (
+          <CourseCard key={i} course={course} purchased={false} />
+        ))}
+      </div>
+      <Link className={cn(buttonVariants({ variant: "outline" }), "mt-10 mx-auto flex w-fit")} href="/dashboard/courses">View More</Link>
     </section>
   );
 };

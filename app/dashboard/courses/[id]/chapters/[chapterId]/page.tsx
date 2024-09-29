@@ -41,15 +41,23 @@ const Chapter = ({ params: { id, chapterId } }: Props) => {
   const isCompleted = data?.purchased && data?.userProgress?.isCompleted;
   const isPreviousChapterCompleted = data?.isPreviousChapterCompleted;
   const purchased = data?.purchased;
-  console.log(purchased)
+  const isCurrentChapterCompleted = data?.chapter?.assignments ? data?.chapter?.submissions?.some((submission) => submission.status === SubmissionStatus.Accepted) : true;
 
   return (
     <div className="my-2 mt-6 space-y-2">
-      {!isLoading && isCompleted && isPreviousChapterCompleted && (
+      {!isLoading && isCompleted && isPreviousChapterCompleted && isCurrentChapterCompleted && (
         <div className="px-4">
           <Banner
             variant="success"
             label="You already completed this chapter."
+          />
+        </div>
+      )}
+      {!isLoading && isCompleted && isPreviousChapterCompleted && !isCurrentChapterCompleted && (
+        <div className="px-4">
+          <Banner
+            variant="warning"
+            label="You need to submit the assignment to complete this chapter."
           />
         </div>
       )}
@@ -129,21 +137,23 @@ const Chapter = ({ params: { id, chapterId } }: Props) => {
                 }
               </div>
             </div>
-            {
-              purchased && (
-                <Link href={`/dashboard/assignment/${id}/${chapterId}`} className={cn(buttonVariants({ variant: "outline" }))}>
-                  Submit Assignment
-                </Link>
-              )
-            }
+            <div className="flex flex-col gap-y-2">
+              {
+                purchased && (
+                  <Link href={`/dashboard/assignment/${id}/${chapterId}`} className={cn(buttonVariants({ variant: "outline" }))}>
+                    Submit Assignment
+                  </Link>
+                )
+              }
 
-            {
-              purchased && (
-                <Link href={`/dashboard/chat?userId=${data?.adminId}`} className={cn(buttonVariants({ variant: "default" }))}>
-                  Support Chat
-                </Link>
-              )
-            }
+              {
+                purchased && (
+                  <Link href={`/dashboard/chat?userId=${data?.adminId}`} className={cn(buttonVariants({ variant: "default" }))}>
+                    Support Chat
+                  </Link>
+                )
+              }
+            </div>
           </CardContent>
         </Card>
       </div>

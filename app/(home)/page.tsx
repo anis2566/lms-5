@@ -30,8 +30,8 @@ const App = async () => {
     <div className="w-full space-y-8">
       <Hero />
       <Courses courses={coursesWithProgress} />
-      <Testimonials />
       <Workflow />
+      <Testimonials />
       <Newslettr />
     </div>
   );

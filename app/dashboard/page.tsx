@@ -14,6 +14,7 @@ import { db } from "@/lib/prisma";
 import { GET_USER } from "@/services/user.service";
 import { SubmissionStatus } from "@prisma/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 
 export const metadata: Metadata = {
@@ -125,7 +126,15 @@ const Dashboard = async () => {
                     <TableRow key={assignment.id}>
                       <TableCell>{assignment.assignment.title}</TableCell>
                       <TableCell>{assignment.chapter.title}</TableCell>
-                      <TableCell>{assignment.status}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={assignment.status === SubmissionStatus.Accepted ? "default" :
+                            assignment.status === SubmissionStatus.Rejected ? "destructive" :
+                              "outline"}
+                        >
+                          {assignment.status}
+                        </Badge>
+                      </TableCell>
                     </TableRow>
                   ))
                 }

@@ -50,7 +50,7 @@ export const SignInForm = () => {
       toast.success(data?.success, {
         id: "sign-in-user",
       });
-      router.push(`/redirect?redirectUrl=${callbackUrl}`)
+      router.push(`/redirect?redirectUrl=${callbackUrl ? callbackUrl : "/"}`)
     },
     onError: (error) => {
       toast.error(error.message, {

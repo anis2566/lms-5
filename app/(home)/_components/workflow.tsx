@@ -33,6 +33,13 @@ const HowItWorksList: WorkflowItem[] = [
     image: "/step-3.png",
   },
   {
+    badgeTitle: "Assignment",
+    title: "Complete Hands-On Assignments",
+    description:
+      "Apply what you've learned by completing practical assignments. These tasks help reinforce your knowledge and give you real-world experience.",
+    image: "/step-5.png",
+  },
+  {
     badgeTitle: "Support",
     title: "Access Help When You Need It",
     description:
@@ -43,7 +50,7 @@ const HowItWorksList: WorkflowItem[] = [
 
 export const Workflow: React.FC = () => {
   return (
-    <section className="container py-24 sm:py-32">
+    <section className="container py-20">
       <div className="mb-8 text-center">
         <h2 className="mb-2 text-center text-lg tracking-wider text-primary">
           How It Works

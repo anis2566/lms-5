@@ -32,6 +32,9 @@ export const CreateNoticeModal = () => {
                 id: "notice-create",
             })
         },
+        onSettled: () => {
+            toast.dismiss("notice-create")
+        }
     })
 
     const form = useForm<z.infer<typeof NoticeSchema>>({

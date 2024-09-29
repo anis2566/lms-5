@@ -12,7 +12,7 @@ export const Hero = () => {
 
   return (
     <section className="container">
-      <div className="mx-auto w-full max-w-screen-xl place-items-center space-y-8 py-20 md:py-32">
+      <div className="mx-auto w-full max-w-screen-xl place-items-center space-y-8 py-[100px]">
         <div className="space-y-8 text-center">
           <Badge variant="outline" className="rounded-full py-2 text-sm">
             <span className="mr-2 text-primary">
@@ -27,7 +27,7 @@ export const Hero = () => {
           <h1>
             <span className="bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text text-transparent">
               {" "}
-              EduConnect{" "}
+              E-Learn{" "}
             </span>
           </h1>
         </div>
@@ -41,17 +41,17 @@ export const Hero = () => {
 
         <div className="flex items-center justify-center gap-4">
           <Button variant="secondary" className="font-bold" asChild>
-            <Link href="/courses">Explore Courses</Link>
+            <Link href="/dashboard/courses">Explore Courses</Link>
           </Button>
           <Button className="group/arrow font-bold" asChild>
-            <Link href="/register">
+            <Link href="/auth/sign-in?callbackUrl=/dashboard/courses">
               Get Started
               <ArrowRight className="ml-2 size-5 transition-transform group-hover/arrow:translate-x-1" />
             </Link>
           </Button>
         </div>
 
-        <div className="group relative pt-20">
+        <div className="group relative">
           <div className="img-shadow-animation absolute -top-6 right-12 h-12 w-[90%] rounded-full bg-primary/50 blur-3xl lg:h-[80%]" />
 
           <div className="relative">
