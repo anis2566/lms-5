@@ -2,14 +2,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Clock3, DollarSign } from "lucide-react";
 import { Category, Chapter, Course } from "@prisma/client";
+import { useMutation } from "@tanstack/react-query";
+import { Rating } from "@smastrom/react-rating";
 
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { formatPrice, getVideoLength } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import { IconBadge } from "./icon-badge";
 import { Button } from "./ui/button";
 import { CourseProgress } from "./course-progress";
+import { CREATE_PAYMENT } from "@/services/payment.service";
+import { useReview } from "@/hooks/use-review";
 
 interface CourseWithFeatures extends Course {
   category: Category | null;
@@ -20,9 +24,31 @@ interface CourseWithFeatures extends Course {
 interface Props {
   course: CourseWithFeatures;
   purchased: boolean;
+  totalReviews: number;
+  isReviewed: boolean;
 }
 
-export const CourseCard = ({ course, purchased }: Props) => {
+export const CourseCard = ({ course, purchased, totalReviews, isReviewed }: Props) => {
+  const { onOpen } = useReview();
+
+  const { mutate: createPayment, isPending } = useMutation({
+    mutationFn: CREATE_PAYMENT,
+    onSuccess: (data) => {
+      if (data?.url) {
+        window.location.replace(data?.url);
+      }
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
+  const handleEnroll = () => {
+    if (course?.price) {
+      createPayment({ amount: course.price.toString(), courseId: course.id });
+    }
+  };
+
   return (
     <div className="group h-full overflow-hidden rounded-lg border p-3 transition hover:shadow-sm">
       <Link href={`/dashboard/courses/${course.id}`}>
@@ -35,11 +61,15 @@ export const CourseCard = ({ course, purchased }: Props) => {
           />
         </div>
         <div className="flex flex-col pt-2">
-          <div className="line-clamp-2 text-lg font-medium transition group-hover:text-sky-700 md:text-base">
-            {course.title}
-          </div>
           <Badge className="max-w-fit">{course.category?.name}</Badge>
-          <div className="my-3 flex items-center gap-x-2 text-sm md:text-xs">
+          <div className="line-clamp-2 text-lg font-medium transition group-hover:text-sky-700 md:text-base space-x-1 pt-1">
+            <p>{course.title}</p>
+            <div className="flex items-center gap-x-1">
+              <Rating value={course.rating ?? 0} readOnly style={{ maxWidth: 70 }}  />
+              <span className="text-xs text-gray-500">({totalReviews ?? 0})</span>
+            </div>
+          </div>
+          <div className="my-1 flex items-center gap-x-2 text-sm md:text-xs">
             <div className="flex items-center gap-x-1">
               <IconBadge size="sm" icon={BookOpen} />
               <span>
@@ -73,9 +103,18 @@ export const CourseCard = ({ course, purchased }: Props) => {
             <IconBadge size="sm" icon={DollarSign} />
             <span>{formatPrice(course.price || 0)}</span>
           </div>
-          <Button>Buy</Button>
+          <Button onClick={handleEnroll} disabled={isPending}>
+            {isPending ? "Loading..." : "Buy"}
+          </Button>
         </div>
       )}
+      {
+        purchased && !isReviewed && (
+          <Button variant="outline" size="sm" className="mt-4" onClick={() => onOpen(course.id)}>
+            Leave a Review
+          </Button>
+        )
+      }
     </div>
   );
 };

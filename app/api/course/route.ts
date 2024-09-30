@@ -15,7 +15,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const pageSize = 8;
 
-    // Fetch courses based on filters and pagination
     const posts = await db.course.findMany({
       where: {
         ...(search && {
@@ -39,13 +38,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       orderBy: {
         createdAt: sort === "asc" ? "asc" : "desc",
       },
-      take: pageSize + 1, // Fetch one extra to determine if there's a next page
+      take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
     });
 
     const nextCursor = posts.length > pageSize ? posts[pageSize].id : null;
 
-    // Calculate progress for each course
     const coursesWithProgress = await Promise.all(
       posts.slice(0, pageSize).map(async (course) => {
         if (userId) {

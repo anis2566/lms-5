@@ -152,7 +152,7 @@ const Dashboard = async () => {
           <CardContent>
             <div className="flex flex-col gap-2">
               <div className="flex flex-row items-center justify-between">
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-y-2">
                   {
                     notices.map((notice) => (
                       <div key={notice.id} className="flex items-center gap-x-2">

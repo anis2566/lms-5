@@ -66,7 +66,7 @@ export const CourseList = ({ categories }: Props) => {
           onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
         >
           {courses.map((course, i) => (
-            <CourseCard key={i} course={course} purchased={false} />
+            <CourseCard key={i} course={course} purchased={false} totalReviews={course.reviews.length} isReviewed={true} />
           ))}
           {isFetchingNextPage && (
             <div className="flex justify-center">

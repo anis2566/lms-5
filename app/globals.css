@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import "~stream-chat-react/dist/css/v2/index.css";
+@import "@smastrom/react-rating/style.css";
 
 :root {
   --foreground-rgb: 0, 0, 0;

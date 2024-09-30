@@ -1,4 +1,5 @@
-import { Star } from "lucide-react";
+import { Review, User } from "@prisma/client";
+import { Rating } from "@smastrom/react-rating";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -16,66 +17,16 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-interface ReviewProps {
-  image: string;
-  name: string;
-  userName: string;
-  comment: string;
-  rating: number;
+
+interface ReviewWithUser extends Review {
+  user: User;
 }
 
-const reviewList: ReviewProps[] = [
-  {
-    image: "https://i.pravatar.cc/150?img=1",
-    name: "Emily Chen",
-    userName: "Software Developer",
-    comment:
-      "The courses on this platform have been instrumental in advancing my career. The AI and Machine Learning track was particularly enlightening and helped me transition into a new role at a top tech company.",
-    rating: 5.0,
-  },
-  {
-    image: "https://i.pravatar.cc/150?img=2",
-    name: "Michael Rodriguez",
-    userName: "Data Scientist",
-    comment:
-      "I've taken several data science courses here, and I'm impressed by the depth of content and hands-on projects. The instructors are industry experts, and the community support is fantastic.",
-    rating: 4.8,
-  },
-  {
-    image: "https://i.pravatar.cc/150?img=3",
-    name: "Sarah Johnson",
-    userName: "UX Designer",
-    comment:
-      "As someone transitioning into UX design, I found the UI/UX track incredibly valuable. The courses cover both theory and practical skills, and the portfolio projects helped me land my first design job.",
-    rating: 4.9,
-  },
-  {
-    image: "https://i.pravatar.cc/150?img=4",
-    name: "David Patel",
-    userName: "Cybersecurity Analyst",
-    comment:
-      "The cybersecurity program here is top-notch. It covers the latest threats and defense strategies, and the hands-on labs gave me practical experience that I use daily in my work protecting critical infrastructure.",
-    rating: 5.0,
-  },
-  {
-    image: "https://i.pravatar.cc/150?img=5",
-    name: "Lisa Thompson",
-    userName: "Product Manager",
-    comment:
-      "The product management course exceeded my expectations. It provided a comprehensive overview of the field and equipped me with tools and frameworks that I immediately applied in my role.",
-    rating: 5.0,
-  },
-  {
-    image: "https://i.pravatar.cc/150?img=6",
-    name: "Alex Kowalski",
-    userName: "Full Stack Developer",
-    comment:
-      "I completed the full stack web development bootcamp, and it was intense but rewarding. The curriculum is up-to-date with the latest technologies, and the capstone project was a great addition to my portfolio.",
-    rating: 4.9,
-  },
-];
+interface Props {
+  reviews: ReviewWithUser[];
+}
 
-export const Testimonials = () => {
+export const Testimonials = ({ reviews }: Props) => {
   return (
     <section id="testimonials" className="container py-20">
       <div className="mb-8 text-center">
@@ -95,23 +46,23 @@ export const Testimonials = () => {
         className="relative mx-auto w-[80%] sm:w-[90%] lg:max-w-screen-xl"
       >
         <CarouselContent>
-          {reviewList.map((review) => (
+          {reviews.map((review) => (
             <CarouselItem
-              key={review.name}
+              key={review.id}
               className="md:basis-1/2 lg:basis-1/3"
             >
-              <Card className="flex h-[300px] flex-col bg-muted/50 dark:bg-card">
+              <Card className="flex h-[230px] flex-col bg-muted/50 dark:bg-card">
                 <CardContent className="flex-grow pb-0 pt-6">
                   <div className="flex gap-1 pb-4">
-                    {[...Array(5)].map((_, index) => (
-                      <Star
-                        key={index}
-                        className="h-4 w-4 fill-primary text-primary"
-                      />
-                    ))}
+                    <Rating
+                      value={review.rating}
+                      className="h-4 w-4 fill-primary text-primary"
+                      readOnly
+                      style={{ width: 100 }}
+                    />
                   </div>
                   <p className="line-clamp-4 overflow-hidden text-ellipsis">
-                    &quot;{review.comment}&quot;
+                    &quot;{review.content}&quot;
                   </p>
                 </CardContent>
 
@@ -119,15 +70,15 @@ export const Testimonials = () => {
                   <div className="flex flex-row items-center gap-4">
                     <Avatar>
                       <AvatarImage
-                        src={review.image}
-                        alt={`Avatar of ${review.name}`}
+                        src={review.user.image || ""}
+                        alt={`Avatar of ${review.user.name}`}
                       />
-                      <AvatarFallback>{review.name.slice(0, 2)}</AvatarFallback>
+                      <AvatarFallback>{review.user.name?.slice(0, 2)}</AvatarFallback>
                     </Avatar>
 
                     <div className="flex flex-col">
-                      <CardTitle className="text-lg">{review.name}</CardTitle>
-                      <CardDescription>{review.userName}</CardDescription>
+                      <CardTitle className="text-lg">{review.user.name}</CardTitle>
+                      <CardDescription>{review.user.email}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>

@@ -3,6 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/infinite-scroll-container";
@@ -20,6 +21,7 @@ export const CourseList = ({ userId }: Props) => {
 
   const search = searchParams.get("search");
   const sort = searchParams.get("sort");
+  const {data:session} = useSession();
 
   const {
     data,
@@ -62,7 +64,13 @@ export const CourseList = ({ userId }: Props) => {
           onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
         >
           {courses.map((course, i) => (
-            <CourseCard key={i} course={course} purchased={true} />
+            <CourseCard
+              key={i}
+              course={course}
+              purchased={true}
+              isReviewed={!!course.reviews.find(review => review.userId === session?.userId)}
+              totalReviews={course.reviews.length}
+            />
           ))}
           {isFetchingNextPage && (
             <div className="flex justify-center">

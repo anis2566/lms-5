@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, Chapter, Course } from "@prisma/client";
+import { Category, Chapter, Course, Review } from "@prisma/client";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ interface CourseWithFeatures extends Course {
   category: Category | null;
   chapters: Chapter[];
   progress: number | null;
+  reviews: Review[];
 }
 
 interface Props {
@@ -43,7 +44,7 @@ export const Courses = ({ courses }: Props) => {
 
       <div className="grid md:grid-cols-4 gap-6 mt-10">
         {displayCourses.map((course, i) => (
-          <CourseCard key={i} course={course} purchased={false} />
+          <CourseCard key={i} course={course} purchased={false} totalReviews={course.reviews.length} isReviewed={true} />
         ))}
       </div>
       <Link className={cn(buttonVariants({ variant: "outline" }), "mt-10 mx-auto flex w-fit")} href="/dashboard/courses">View More</Link>

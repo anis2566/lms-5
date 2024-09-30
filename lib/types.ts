@@ -23,6 +23,11 @@ export function getCourseDataInclude() {
         isPublished: true,
       },
     },
+    reviews: {
+      select: {
+        userId: true,
+      }
+    },
     category: true,
   } satisfies Prisma.CourseInclude;
 }

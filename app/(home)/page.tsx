@@ -15,9 +15,16 @@ const App = async () => {
           isPublished: true,
         },
       },
+      reviews: true,
     },
     orderBy: {
       createdAt: "asc",
+    },
+  });
+
+  const reviews = await db.review.findMany({
+    include: {
+      user: true,
     },
   });
 
@@ -31,7 +38,7 @@ const App = async () => {
       <Hero />
       <Courses courses={coursesWithProgress} />
       <Workflow />
-      <Testimonials />
+      <Testimonials reviews={reviews} />
       <Newslettr />
     </div>
   );

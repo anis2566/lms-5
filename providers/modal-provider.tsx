@@ -11,6 +11,7 @@ import { DeleteNoticeModal } from "@/app/admin/notice/_components/delete-modal";
 import { AnswerModal } from "@/app/admin/question/_components/answer-modal";
 import { DeleteQuestionModal } from "@/app/admin/question/_components/delete-modal";
 import { SubmissionModal } from "@/app/dashboard/assignment/[id]/[chapterId]/_components/submission-modal";
+import { ReviewModal } from "@/app/dashboard/my-courses/_components/review-modal";
 
 export const ModalProvider = () => {
   return (
@@ -26,6 +27,7 @@ export const ModalProvider = () => {
       <CreateNoticeModal />
       <DeleteNoticeModal />
       <DeleteQuestionModal />
+      <ReviewModal />
     </>
   );
 };
