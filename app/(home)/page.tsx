@@ -7,7 +7,7 @@ import { Newslettr } from "./_components/newslettr";
 
 const App = async () => {
   const courses = await db.course.findMany({
-    take: 10,
+    take: 4,
     include: {
       category: true,
       chapters: {
@@ -18,7 +18,7 @@ const App = async () => {
       reviews: true,
     },
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
   });
 

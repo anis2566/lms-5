@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Rating } from "@smastrom/react-rating";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -23,15 +23,18 @@ const formSchema = z.object({
 
 export const ReviewModal = () => {
     const { open, id, onClose } = useReview();
+    const queryClient = useQueryClient();
 
     const { mutate: createReview, isPending } = useMutation({
         mutationFn: CREATE_REVIEW,
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             toast.success(data.success, {
                 id: "review-modal",
             });
             onClose();
             form.reset();
+            await queryClient.invalidateQueries({ queryKey: ["get-course-for-me"] });
+            await queryClient.refetchQueries({ queryKey: ["get-course-for-me"] });
         },
         onError: (error) => {
             toast.error(error.message, {

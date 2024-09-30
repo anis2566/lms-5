@@ -11,6 +11,10 @@ export const CATEGORY_TAG_LIST = [
     value: "Technology",
     label: "Technology",
   },
+  {
+    value: "Cooking",
+    label: "Cooking",
+  },
 ];
 
 type NavMenu = {

@@ -35,7 +35,7 @@ export const Testimonials = ({ reviews }: Props) => {
         </h2>
 
         <h2 className="mb-4 text-center text-3xl font-bold md:text-4xl">
-          Hear What Our 100+ Clients Say
+          Hear What Our {reviews.length}+ Clients Say
         </h2>
       </div>
 

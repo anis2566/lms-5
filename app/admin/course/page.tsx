@@ -53,6 +53,9 @@ const Courses = async ({ searchParams }: Props) => {
       include: {
         category: true,
         chapters: {
+          where: {
+            isPublished: true,
+          },
           select: {
             id: true,
           },

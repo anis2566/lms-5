@@ -49,6 +49,8 @@ export const CourseCard = ({ course, purchased, totalReviews, isReviewed }: Prop
     }
   };
 
+  
+
   return (
     <div className="group h-full overflow-hidden rounded-lg border p-3 transition hover:shadow-sm">
       <Link href={`/dashboard/courses/${course.id}`}>
@@ -61,12 +63,12 @@ export const CourseCard = ({ course, purchased, totalReviews, isReviewed }: Prop
           />
         </div>
         <div className="flex flex-col pt-2">
-          <Badge className="max-w-fit">{course.category?.name}</Badge>
+          <Badge variant="outline" className="max-w-fit">{course.category?.name}</Badge>
           <div className="line-clamp-2 text-lg font-medium transition group-hover:text-sky-700 md:text-base space-x-1 pt-1">
             <p>{course.title}</p>
             <div className="flex items-center gap-x-1">
               <Rating value={course.rating ?? 0} readOnly style={{ maxWidth: 70 }}  />
-              <span className="text-xs text-gray-500">({totalReviews ?? 0})</span>
+              <span className="text-xs text-gray-500">({course.rating ?? 0})</span>
             </div>
           </div>
           <div className="my-1 flex items-center gap-x-2 text-sm md:text-xs">

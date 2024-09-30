@@ -98,7 +98,7 @@ export async function POST(request: Request) {
       }
 
       return NextResponse.redirect(
-        `${baseUrl}/dashboard/payment/success?callback=/dashboard`,
+        `${baseUrl}/dashboard/payment/success?callback=/dashboard/courses/${queryParams.courseId}`,
         303,
       );
     } else {

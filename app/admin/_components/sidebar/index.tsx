@@ -1,15 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { PanelsTopLeft } from "lucide-react";
-
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { useSidebarToggle } from "@/hooks/use-sidebar-toggle";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { Menu } from "./menu";
 import { SidebarToggle } from "./sidebar-toggle";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/logo";
 
 export function Sidebar() {
   const sidebar = useSidebar(useSidebarToggle, (state) => state);
@@ -25,28 +22,7 @@ export function Sidebar() {
     >
       <SidebarToggle isOpen={sidebar?.isOpen} setIsOpen={sidebar?.setIsOpen} />
       <div className="relative flex h-full flex-col overflow-y-auto px-3 py-4 shadow-md dark:shadow-zinc-800">
-        <Button
-          className={cn(
-            "mb-1 transition-transform duration-300 ease-in-out",
-            sidebar?.isOpen === false ? "translate-x-1" : "translate-x-0",
-          )}
-          variant="link"
-          asChild
-        >
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <PanelsTopLeft className="mr-1 h-6 w-6" />
-            <h1
-              className={cn(
-                "whitespace-nowrap text-lg font-bold transition-[transform,opacity,display] duration-300 ease-in-out",
-                sidebar?.isOpen === false
-                  ? "hidden -translate-x-96 opacity-0"
-                  : "translate-x-0 opacity-100",
-              )}
-            >
-              Basic
-            </h1>
-          </Link>
-        </Button>
+        <Logo callbackUrl="/dashboard" className={!sidebar?.isOpen ? "hidden" : "block"} />
         <Menu isOpen={sidebar?.isOpen} />
         <Separator />
       </div>

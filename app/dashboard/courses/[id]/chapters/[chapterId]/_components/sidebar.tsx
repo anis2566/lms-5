@@ -28,7 +28,7 @@ interface Props {
 
 export const CourseSidebar = ({ course, progressCount, purchased }: Props) => {
   return (
-    <div className="hidden h-full flex-col overflow-y-auto border-r shadow-sm md:flex">
+    <div className="hidden h-full flex-col overflow-y-auto border-r shadow-sm md:flex w-[250px]">
       <div className="flex flex-col border-b px-8 py-4">
         <h1 className="font-semibold truncate">{course.title}</h1>
         {purchased && (
