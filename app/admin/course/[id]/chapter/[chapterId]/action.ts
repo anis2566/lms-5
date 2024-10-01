@@ -173,8 +173,6 @@ export const UPLOAD_VIDEO = async (formData: FormData) => {
       },
     });
 
-    console.log(uploadRes.status);
-
     if (uploadRes.status === 201) {
       const res = await fetch(
         `https://dev.vdocipher.com/api/videos/${videoId}`,
@@ -186,32 +184,25 @@ export const UPLOAD_VIDEO = async (formData: FormData) => {
         },
       );
 
-      console.log(res);
+      await db.chapter.update({
+        where: {
+          id: chapterId,
+        },
+        data: {
+          videoUrl: videoId,
+          videoLength: parseInt(videoLength, 10),
+        },
+      });
     }
-
-    // if (!res.ok) throw new Error("Something went wrong");
-
-    // const data = await res.json();
-
-    // console.log(data);
-
-    await db.chapter.update({
-      where: {
-        id: chapterId,
-      },
-      data: {
-        videoUrl: videoId,
-        videoLength: parseInt(videoLength, 10),
-      },
-    });
 
     revalidatePath(`/admin/course/${courseId}/chapters/${chapterId}`);
 
     return {
-      success: "Video uploded",
+      success: "Video uploaded",
     };
   } catch (error) {
-    throw new Error("Faild to upload video");
+    console.error(`Failed to upload video: ${error}`); // Log the error message
+    throw new Error("Failed to upload video");
   }
 };
 
